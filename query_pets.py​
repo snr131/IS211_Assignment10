@@ -1,3 +1,45 @@
+import sqlite3 as lite
+
+
+def retrieve_data(id):
+
+    try:
+        con = lite.connect('pets.db')
+
+        cur = con.cursor()
+        cur.execute('''
+        SELECT person.first_name, person.last_name, person.age, pet.name, pet.breed, pet.age 
+        FROM person
+        LEFT JOIN person_pet ON person.id = person_pet.person_id 
+        LEFT JOIN pet ON person_pet.pet_id = pet.id
+        WHERE person.id=?''', (id,))
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                print(f"{row[0]} {row[1]}, {row[2]} years old")
+                print(f"{row[0]} owned {row[3]}, a {row[4]}, that was {row[5]} years old")
+        else:
+            raise NoRecordError("No record found with that id")
+
+    except lite.Error as e:
+        print(f"Error {e}:")
+
+    finally:
+        if con:
+            con.close()
+
+
+class NoRecordError(Exception):
+    pass
+
+
+def main():
+    user_input = input('Enter a user id: ')
+    retrieve_data(user_input)
+    while int(user_input) > 0:
+        user_input = input('Enter a user id: ')
+        retrieve_data(user_input)
+    
 
 if __name__ == "__main__":
-    pass
+    main()
